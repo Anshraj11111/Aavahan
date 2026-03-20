@@ -54,30 +54,226 @@ async function seed() {
   const superAdmin = admins[0];
 
   // ─── Events ────────────────────────────────────────────────────────────────
-  const festStart = new Date('2026-04-15');
-  const day2 = new Date('2026-04-16');
-  const day3 = new Date('2026-04-17');
-  const deadline = new Date('2026-04-10');
+  const day1 = new Date('2026-04-01'); // Ethnic Day
+  const day2 = new Date('2026-04-02'); // Technical Day 1
+  const day3 = new Date('2026-04-03'); // Technical Day 2
+  const deadline = new Date('2026-03-25');
 
   const eventDefs = [
-    // Day 1 - Cultural
-    { title: 'Battle of Bands', category: 'cultural', day: 'Day 1', date: festStart, participationType: 'team', minTeamSize: 3, maxTeamSize: 8, entryFee: 500, maxRegistrations: 20 },
-    { title: 'Solo Dance', category: 'cultural', day: 'Day 1', date: festStart, participationType: 'solo', entryFee: 200, maxRegistrations: 50 },
-    { title: 'Group Dance', category: 'cultural', day: 'Day 1', date: festStart, participationType: 'team', minTeamSize: 5, maxTeamSize: 15, entryFee: 300, maxRegistrations: 15 },
-    { title: 'Nukkad Natak', category: 'cultural', day: 'Day 1', date: festStart, participationType: 'team', minTeamSize: 5, maxTeamSize: 12, entryFee: 400, maxRegistrations: 10 },
-    { title: 'Singing Competition', category: 'cultural', day: 'Day 1', date: festStart, participationType: 'solo', entryFee: 150, maxRegistrations: 40 },
-    // Day 2 - Technical
-    { title: 'Hackathon 2026', category: 'technical', day: 'Day 2', date: day2, participationType: 'team', minTeamSize: 2, maxTeamSize: 4, entryFee: 300, maxRegistrations: 30 },
-    { title: 'Paper Presentation', category: 'presentation', day: 'Day 2', date: day2, participationType: 'solo', entryFee: 100, maxRegistrations: 60 },
-    { title: 'Robo Race', category: 'robotics', day: 'Day 2', date: day2, participationType: 'team', minTeamSize: 2, maxTeamSize: 4, entryFee: 500, maxRegistrations: 20 },
-    { title: 'Code Sprint', category: 'coding', day: 'Day 2', date: day2, participationType: 'solo', entryFee: 200, maxRegistrations: 80 },
-    { title: 'UI/UX Design Challenge', category: 'design', day: 'Day 2', date: day2, participationType: 'solo', entryFee: 150, maxRegistrations: 40 },
-    // Day 3 - Mixed
-    { title: 'Tech Quiz', category: 'quiz', day: 'Day 3', date: day3, participationType: 'team', minTeamSize: 2, maxTeamSize: 3, entryFee: 100, maxRegistrations: 50 },
-    { title: 'Gaming Tournament', category: 'gaming', day: 'Day 3', date: day3, participationType: 'solo', entryFee: 200, maxRegistrations: 64 },
-    { title: 'Project Exhibition', category: 'exhibition', day: 'Day 3', date: day3, participationType: 'team', minTeamSize: 2, maxTeamSize: 5, entryFee: 0, maxRegistrations: 30 },
-    { title: 'Photography Contest', category: 'other', day: 'Day 3', date: day3, participationType: 'solo', entryFee: 100, maxRegistrations: 50 },
-    { title: 'Debate Competition', category: 'other', day: 'Day 3', date: day3, participationType: 'solo', entryFee: 100, maxRegistrations: 40 },
+    // Day 1 - Ethnic Day (Cultural Events)
+    { 
+      title: 'Traditional Dress Show', 
+      category: 'cultural', 
+      day: 'Day 1', 
+      date: day1, 
+      participationType: 'solo', 
+      entryFee: 100, 
+      maxRegistrations: 50,
+      startTime: '10:00 AM',
+      endTime: '12:00 PM',
+      shortDescription: 'Showcase traditional attire from different cultures and regions of India',
+      longDescription: 'Celebrate Unity in Diversity by wearing and presenting traditional dress from your culture. Participants will walk the ramp and explain the significance of their attire.'
+    },
+    { 
+      title: 'Folk Dance Performances', 
+      category: 'cultural', 
+      day: 'Day 1', 
+      date: day1, 
+      participationType: 'team', 
+      minTeamSize: 5, 
+      maxTeamSize: 15, 
+      entryFee: 300, 
+      maxRegistrations: 20,
+      startTime: '12:30 PM',
+      endTime: '02:30 PM',
+      shortDescription: 'Perform traditional folk dances from various Indian states',
+      longDescription: 'Teams will perform authentic folk dances representing different regions of India. Costumes, music, and choreography should reflect traditional culture.'
+    },
+    { 
+      title: 'Ethnic Fashion Walk', 
+      category: 'cultural', 
+      day: 'Day 1', 
+      date: day1, 
+      participationType: 'solo', 
+      entryFee: 150, 
+      maxRegistrations: 40,
+      startTime: '03:00 PM',
+      endTime: '04:30 PM',
+      shortDescription: 'Fashion show featuring ethnic and traditional wear',
+      longDescription: 'A glamorous fashion walk showcasing the beauty of ethnic Indian fashion. Participants will model traditional outfits with modern styling.'
+    },
+    { 
+      title: 'Mr. & Ms. Ethnic Shri Ram', 
+      category: 'cultural', 
+      day: 'Day 1', 
+      date: day1, 
+      participationType: 'solo', 
+      entryFee: 200, 
+      maxRegistrations: 30,
+      startTime: '05:00 PM',
+      endTime: '07:00 PM',
+      shortDescription: 'Pageant celebrating cultural diversity and talent',
+      longDescription: 'A prestigious competition to crown Mr. & Ms. Ethnic Shri Ram. Rounds include traditional wear, talent showcase, and Q&A.'
+    },
+    { 
+      title: 'Cultural Night', 
+      category: 'cultural', 
+      day: 'Day 1', 
+      date: day1, 
+      participationType: 'team', 
+      minTeamSize: 1, 
+      maxTeamSize: 20, 
+      entryFee: 0, 
+      maxRegistrations: 100,
+      startTime: '07:30 PM',
+      endTime: '10:00 PM',
+      shortDescription: 'Evening of cultural performances, music, and dance',
+      longDescription: 'A grand cultural night featuring performances from students across all institutes. Open stage for all cultural activities.'
+    },
+    
+    // Day 2 - Technical Day 1
+    { 
+      title: 'Hackathon 2026', 
+      category: 'technical', 
+      day: 'Day 2', 
+      date: day2, 
+      participationType: 'team', 
+      minTeamSize: 2, 
+      maxTeamSize: 4, 
+      entryFee: 400, 
+      maxRegistrations: 30,
+      startTime: '09:00 AM',
+      endTime: '09:00 PM',
+      shortDescription: '24-hour coding marathon to build innovative solutions',
+      longDescription: '24-hour hackathon where teams will develop innovative tech solutions. Themes include AI, IoT, Web Development, and Mobile Apps.'
+    },
+    { 
+      title: 'Coding Competition', 
+      category: 'technical', 
+      day: 'Day 2', 
+      date: day2, 
+      participationType: 'solo', 
+      entryFee: 200, 
+      maxRegistrations: 80,
+      startTime: '10:00 AM',
+      endTime: '01:00 PM',
+      shortDescription: 'Competitive programming challenge',
+      longDescription: 'Test your coding skills in this competitive programming contest. Solve algorithmic problems within time limits.'
+    },
+    { 
+      title: 'AI Workshop', 
+      category: 'technical', 
+      day: 'Day 2', 
+      date: day2, 
+      participationType: 'solo', 
+      entryFee: 150, 
+      maxRegistrations: 60,
+      startTime: '02:00 PM',
+      endTime: '05:00 PM',
+      shortDescription: 'Hands-on workshop on Artificial Intelligence and Machine Learning',
+      longDescription: 'Learn the fundamentals of AI and ML through practical examples. Build your first ML model in this interactive workshop.'
+    },
+    { 
+      title: 'Robotics Challenge', 
+      category: 'technical', 
+      day: 'Day 2', 
+      date: day2, 
+      participationType: 'team', 
+      minTeamSize: 2, 
+      maxTeamSize: 4, 
+      entryFee: 500, 
+      maxRegistrations: 20,
+      startTime: '10:00 AM',
+      endTime: '04:00 PM',
+      shortDescription: 'Build and compete with robots',
+      longDescription: 'Design, build, and program robots to complete challenging tasks. Categories include line following, maze solving, and robo soccer.'
+    },
+    { 
+      title: 'Technical Workshops', 
+      category: 'technical', 
+      day: 'Day 2', 
+      date: day2, 
+      participationType: 'solo', 
+      entryFee: 100, 
+      maxRegistrations: 100,
+      startTime: '11:00 AM',
+      endTime: '05:00 PM',
+      shortDescription: 'Various technical workshops by industry experts',
+      longDescription: 'Multiple workshops covering Web Development, Cloud Computing, Cybersecurity, and more. Learn from industry professionals.'
+    },
+    
+    // Day 3 - Technical Day 2
+    { 
+      title: 'Startup Pitch', 
+      category: 'technical', 
+      day: 'Day 3', 
+      date: day3, 
+      participationType: 'team', 
+      minTeamSize: 1, 
+      maxTeamSize: 5, 
+      entryFee: 300, 
+      maxRegistrations: 25,
+      startTime: '10:00 AM',
+      endTime: '01:00 PM',
+      shortDescription: 'Present your startup ideas to investors and judges',
+      longDescription: 'Pitch your innovative startup ideas to a panel of investors and industry experts. Best ideas win funding and mentorship.'
+    },
+    { 
+      title: 'Innovation Lab', 
+      category: 'technical', 
+      day: 'Day 3', 
+      date: day3, 
+      participationType: 'team', 
+      minTeamSize: 2, 
+      maxTeamSize: 5, 
+      entryFee: 250, 
+      maxRegistrations: 30,
+      startTime: '10:00 AM',
+      endTime: '03:00 PM',
+      shortDescription: 'Showcase innovative tech projects and prototypes',
+      longDescription: 'Display your innovative projects, prototypes, and research work. Interact with visitors and judges to explain your innovation.'
+    },
+    { 
+      title: 'Project Presentations', 
+      category: 'technical', 
+      day: 'Day 3', 
+      date: day3, 
+      participationType: 'team', 
+      minTeamSize: 2, 
+      maxTeamSize: 4, 
+      entryFee: 200, 
+      maxRegistrations: 40,
+      startTime: '02:00 PM',
+      endTime: '05:00 PM',
+      shortDescription: 'Present technical projects and research papers',
+      longDescription: 'Present your technical projects, research papers, and case studies. Categories include all engineering and technology domains.'
+    },
+    { 
+      title: 'Live Musical Concert - ASTRA 13', 
+      category: 'cultural', 
+      day: 'Day 3', 
+      date: day3, 
+      participationType: 'solo', 
+      entryFee: 0, 
+      maxRegistrations: 1000,
+      startTime: '06:00 PM',
+      endTime: '09:00 PM',
+      shortDescription: 'Live performance by ASTRA 13 band',
+      longDescription: 'Experience an electrifying live musical concert by the renowned band ASTRA 13. An evening of music, energy, and entertainment!'
+    },
+    { 
+      title: 'Closing Ceremony & Prize Distribution', 
+      category: 'cultural', 
+      day: 'Day 3', 
+      date: day3, 
+      participationType: 'solo', 
+      entryFee: 0, 
+      maxRegistrations: 1000,
+      startTime: '09:30 PM',
+      endTime: '11:00 PM',
+      shortDescription: 'Grand closing ceremony with prize distribution',
+      longDescription: 'The grand finale of Tech Fest 2026 with prize distribution, awards ceremony, and closing performances.'
+    },
   ];
 
   const events = await Event.insertMany(
@@ -85,10 +281,16 @@ async function seed() {
       ...e,
       slug: generateSlug(e.title),
       status: 'published',
-      featured: ['Hackathon 2026', 'Battle of Bands', 'Robo Race'].includes(e.title),
+      featured: [
+        'Hackathon 2026', 
+        'Mr. & Ms. Ethnic Shri Ram', 
+        'Robotics Challenge', 
+        'Live Musical Concert - ASTRA 13',
+        'Startup Pitch',
+        'Cultural Night'
+      ].includes(e.title),
       registrationDeadline: deadline,
-      venue: 'Main Auditorium, Shri Ram Group Campus',
-      shortDescription: `Join us for ${e.title} at ${env.FEST_NAME}!`,
+      venue: e.venue || 'Main Campus, Shri Ram Group, Jabalpur',
       createdBy: superAdmin._id,
       isSeed: true,
     }))
@@ -134,3 +336,5 @@ seed().catch((err) => {
   console.error('[Seed] Error:', err.message);
   process.exit(1);
 });
+
+

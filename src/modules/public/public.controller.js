@@ -64,11 +64,11 @@ const getPublishedEvents = asyncHandler(async (req, res) => {
  */
 const getFeaturedEvents = asyncHandler(async (req, res) => {
   const cached = await cacheGet(CACHE_KEYS.FEATURED_EVENTS);
-  if (cached) return successResponse(res, { events: cached });
+  if (cached) return successResponse(res, cached);
 
   const events = await eventService.getFeaturedEvents();
   await cacheSet(CACHE_KEYS.FEATURED_EVENTS, events, CACHE_TTL.FEATURED_EVENTS);
-  return successResponse(res, { events });
+  return successResponse(res, events);
 });
 
 /**
