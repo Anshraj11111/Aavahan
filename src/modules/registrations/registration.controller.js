@@ -17,14 +17,7 @@ const createRegistration = asyncHandler(async (req, res) => {
 
   return successResponse(
     res,
-    {
-      uniqueRegistrationId: registration.uniqueRegistrationId,
-      registrationStatus: registration.registrationStatus,
-      paymentStatus: registration.paymentStatus,
-      eventTitle: registration.eventTitle,
-      eventDay: registration.eventDay,
-      amountExpected: registration.amountExpected,
-    },
+    registration,
     'Registration submitted successfully. You will receive a confirmation email.',
     201
   );
