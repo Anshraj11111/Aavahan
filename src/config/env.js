@@ -26,8 +26,8 @@ const env = {
   // MongoDB
   MONGODB_URI: required('MONGODB_URI'),
 
-  // Redis
-  REDIS_URL: required('REDIS_URL'),
+  // Redis (optional - can be disabled)
+  REDIS_URL: optional('REDIS_URL', 'disabled'),
 
   // JWT
   JWT_SECRET: required('JWT_SECRET'),
@@ -40,12 +40,12 @@ const env = {
   CLOUDINARY_API_KEY: optional('CLOUDINARY_API_KEY', ''),
   CLOUDINARY_API_SECRET: optional('CLOUDINARY_API_SECRET', ''),
 
-  // SMTP
-  SMTP_HOST: required('SMTP_HOST'),
+  // SMTP (optional)
+  SMTP_HOST: optional('SMTP_HOST', 'smtp.gmail.com'),
   SMTP_PORT: parseInt(optional('SMTP_PORT', '587'), 10),
   SMTP_SECURE: optional('SMTP_SECURE', 'false') === 'true',
-  SMTP_USER: required('SMTP_USER'),
-  SMTP_PASS: required('SMTP_PASS'),
+  SMTP_USER: optional('SMTP_USER', ''),
+  SMTP_PASS: optional('SMTP_PASS', ''),
   EMAIL_FROM: optional('EMAIL_FROM', 'Tech Fest 2026 <noreply@techfest2026.com>'),
 
   // CORS
