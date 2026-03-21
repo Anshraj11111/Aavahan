@@ -76,6 +76,22 @@ async function createRegistration({ body, file, req }) {
     throw err;
   }
 
+  // 5.1. Check for duplicate transaction ID (must be unique across all registrations)
+  if (transactionId && transactionId.trim()) {
+    const duplicateTransaction = await Registration.findOne({
+      transactionId: transactionId.trim(),
+      registrationStatus: { $in: ACTIVE_REGISTRATION_STATUSES },
+    });
+
+    if (duplicateTransaction) {
+      const err = new Error(
+        'This transaction ID has already been used for another registration. Please verify your transaction ID.'
+      );
+      err.statusCode = 409;
+      throw err;
+    }
+  }
+
   // 6. Team/solo validation
   if (event.participationType === PARTICIPATION_TYPE.TEAM) {
     if (!teamName || !teamName.trim()) {

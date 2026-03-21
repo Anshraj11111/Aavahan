@@ -100,6 +100,8 @@ registrationSchema.index({ eventId: 1, registrationStatus: 1 });
 registrationSchema.index({ eventId: 1, paymentStatus: 1 });
 // Cron job: pending verification older than 24h
 registrationSchema.index({ paymentStatus: 1, createdAt: 1 });
+// Unique transaction ID - sparse index (only non-empty values must be unique)
+registrationSchema.index({ transactionId: 1 }, { unique: true, sparse: true, partialFilterExpression: { transactionId: { $ne: '' } } });
 
 const Registration = mongoose.model('Registration', registrationSchema);
 module.exports = Registration;
