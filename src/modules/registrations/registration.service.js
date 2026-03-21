@@ -124,7 +124,95 @@ async function createRegistration({ body, file, req }) {
     }
   }
 
-  // 7. Upload payment screenshot to Cloudinary
+  // 7. Payment verification for paid events
+  if (event.entryFee > 0) {
+    // Transaction ID is mandatory for paid events
+    if (!transactionId || !transactionId.trim()) {
+      const err = new Error('Transaction ID is required for paid events');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Payment screenshot is mandatory for paid events
+    if (!file) {
+      const err = new Error('Payment screenshot is required for paid events');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // OCR verification: Extract text from payment screenshot and verify transaction ID
+    try {
+      console.log('Starting OCR verification for transaction ID:', transactionId);
+      
+      // Convert buffer to base64
+      const base64Image = file.buffer.toString('base64');
+      
+      // Call OCR.space API
+      const FormData = require('form-data');
+      const axios = require('axios');
+      
+      const formData = new FormData();
+      formData.append('base64Image', `data:${file.mimetype};base64,${base64Image}`);
+      formData.append('language', 'eng');
+      formData.append('isOverlayRequired', 'false');
+      formData.append('detectOrientation', 'true');
+      formData.append('scale', 'true');
+      formData.append('OCREngine', '2');
+      
+      const ocrResponse = await axios.post('https://api.ocr.space/parse/image', formData, {
+        headers: {
+          'apikey': 'K87899142388957',
+          ...formData.getHeaders()
+        },
+        timeout: 45000 // 45 second timeout for OCR processing
+      });
+      
+      console.log('OCR Response:', JSON.stringify(ocrResponse.data, null, 2));
+      
+      if (ocrResponse.data.IsErroredOnProcessing) {
+        console.error('OCR processing error:', ocrResponse.data.ErrorMessage);
+        const err = new Error('Failed to verify payment screenshot. Please ensure the image is clear and readable.');
+        err.statusCode = 400;
+        throw err;
+      }
+      
+      const extractedText = ocrResponse.data.ParsedResults?.[0]?.ParsedText || '';
+      console.log('Extracted text from screenshot:', extractedText);
+      
+      if (!extractedText || extractedText.trim().length === 0) {
+        const err = new Error('Could not extract text from payment screenshot. Please upload a clear screenshot showing the transaction ID.');
+        err.statusCode = 400;
+        throw err;
+      }
+      
+      // Verify transaction ID exists in extracted text (case-insensitive)
+      const normalizedExtractedText = extractedText.toLowerCase().replace(/\s+/g, '');
+      const normalizedTransactionId = transactionId.trim().toLowerCase().replace(/\s+/g, '');
+      
+      if (!normalizedExtractedText.includes(normalizedTransactionId)) {
+        console.error('Transaction ID mismatch. Entered:', transactionId, 'Extracted:', extractedText);
+        const err = new Error('Transaction ID does not match the payment screenshot. Please verify your transaction ID and upload the correct screenshot.');
+        err.statusCode = 400;
+        throw err;
+      }
+      
+      console.log('✓ Transaction ID verified successfully in payment screenshot');
+      
+    } catch (error) {
+      // If it's already our custom error, re-throw it
+      if (error.statusCode) {
+        throw error;
+      }
+      
+      // For network/timeout errors, provide helpful message
+      console.error('OCR verification error:', error.message);
+      const err = new Error('Payment verification failed. Please ensure you have uploaded a clear payment screenshot and try again.');
+      err.statusCode = 400;
+      throw err;
+    }
+  }
+
+  // 8. Upload payment screenshot to Cloudinary
   let paymentScreenshotUrl = '';
   if (file) {
     const result = await uploadBuffer(file.buffer, {
@@ -134,10 +222,10 @@ async function createRegistration({ body, file, req }) {
     paymentScreenshotUrl = result.secure_url;
   }
 
-  // 8. Generate unique registration ID (atomic Redis INCR)
+  // 9. Generate unique registration ID (atomic Redis INCR)
   const uniqueRegistrationId = await generateRegistrationId();
 
-  // 9. Create registration with fee from event (not from request body)
+  // 10. Create registration with fee from event (not from request body)
   const registration = await Registration.create({
     fullName,
     email,
@@ -165,13 +253,13 @@ async function createRegistration({ body, file, req }) {
     userAgent: (req.headers && req.headers['user-agent']) || '',
   });
 
-  // 10. Atomically increment event's currentRegistrations
+  // 11. Atomically increment event's currentRegistrations
   await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: 1 } });
 
-  // 11. Invalidate public stats cache
+  // 12. Invalidate public stats cache
   await cacheDel(CACHE_KEYS.PUBLIC_STATS);
 
-  // 12. Send confirmation email (non-fatal)
+  // 13. Send confirmation email (non-fatal)
   sendRegistrationReceived({
     to: email,
     fullName,

@@ -46,6 +46,20 @@ const uploadLimiter = rateLimit({
 });
 
 /**
+ * Payment verification: 20 per hour per IP (more lenient for verification attempts)
+ */
+const verificationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many verification attempts. Please try again after 1 hour.',
+  },
+});
+
+/**
  * Check-in: 60 per minute per IP
  */
 const checkinLimiter = rateLimit({
@@ -73,4 +87,4 @@ const generalLimiter = rateLimit({
   },
 });
 
-module.exports = { authLimiter, registrationLimiter, uploadLimiter, checkinLimiter, generalLimiter };
+module.exports = { authLimiter, registrationLimiter, uploadLimiter, verificationLimiter, checkinLimiter, generalLimiter };

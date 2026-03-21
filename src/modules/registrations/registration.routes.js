@@ -5,7 +5,7 @@ const router = express.Router();
 
 const registrationController = require('./registration.controller');
 const { validate } = require('../../middlewares/validate');
-const { registrationLimiter, uploadLimiter } = require('../../middlewares/rateLimiter');
+const { registrationLimiter, uploadLimiter, verificationLimiter } = require('../../middlewares/rateLimiter');
 const { upload } = require('../../middlewares/upload');
 const { registrationSchema } = require('./registration.validator');
 
@@ -53,6 +53,38 @@ router.post(
   upload.single('screenshot'),
   validate(registrationSchema),
   registrationController.createRegistration
+);
+
+/**
+ * @swagger
+ * /registrations/verify-payment:
+ *   post:
+ *     summary: Verify payment screenshot and transaction ID match
+ *     tags: [Registrations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [transactionId, screenshot]
+ *             properties:
+ *               transactionId:
+ *                 type: string
+ *               screenshot:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Payment verified successfully
+ *       400:
+ *         description: Verification failed
+ */
+router.post(
+  '/verify-payment',
+  verificationLimiter,
+  upload.single('screenshot'),
+  registrationController.verifyPayment
 );
 
 module.exports = router;
