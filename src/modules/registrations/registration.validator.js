@@ -4,8 +4,9 @@ const { z } = require('zod');
 
 const teamMemberSchema = z.object({
   name: z.string().min(1, 'Team member name is required').trim(),
-  email: z.string().email().optional().or(z.literal('')).default(''),
+  email: z.string().trim().optional().default(''),
   phone: z.string().trim().optional().default(''),
+  college: z.string().trim().optional().default(''),
 });
 
 const registrationSchema = z
@@ -21,11 +22,6 @@ const registrationSchema = z
     instituteName: z.string().min(2, 'Institute name is required').max(200).trim(),
     department: z.string().trim().optional().default(''),
     yearOrSemester: z.string().trim().optional().default(''),
-    city: z.string().trim().optional().default(''),
-    gender: z
-      .enum(['male', 'female', 'other', 'prefer_not_to_say', ''])
-      .optional()
-      .default(''),
     eventId: z.string().min(1, 'Event ID is required'),
     transactionId: z.string().trim().optional().default(''),
     teamName: z.string().trim().optional().default(''),

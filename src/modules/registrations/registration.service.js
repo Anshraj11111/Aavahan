@@ -23,22 +23,46 @@ const {
 async function createRegistration({ body, file, req }) {
   const {
     fullName, email, phone, instituteName, department, yearOrSemester,
-    city, gender, eventId, transactionId, teamName, teamMembers,
+    eventId, transactionId, teamName, teamMembers,
   } = body;
 
-  // 1. Fetch event (validates eventId is valid ObjectId)
-  if (!mongoose.Types.ObjectId.isValid(eventId)) {
-    const err = new Error('Invalid event ID');
+  console.log('createRegistration called with eventId:', eventId, 'type:', typeof eventId);
+
+  // 1. Fetch event by ID or slug
+  if (!eventId || !eventId.trim()) {
+    const err = new Error('Event ID is required');
     err.statusCode = 400;
     throw err;
   }
-
-  const event = await Event.findById(eventId);
+  
+  let event;
+  
+  // Try to find by ObjectId first (if it's a valid ObjectId format)
+  try {
+    if (mongoose.Types.ObjectId.isValid(eventId)) {
+      event = await Event.findById(eventId);
+      console.log('Searched by ObjectId:', eventId, 'Found:', !!event);
+    }
+  } catch (error) {
+    console.error('Error searching by ObjectId:', error.message);
+  }
+  
+  // If not found, try to find by slug
   if (!event) {
+    event = await Event.findOne({ slug: eventId });
+    console.log('Searched by slug:', eventId, 'Found:', !!event);
+  }
+  
+  // If still not found, list all events for debugging
+  if (!event) {
+    const allEvents = await Event.find({}).select('_id title slug').limit(10);
+    console.error('Event not found. Available events:', allEvents.map(e => ({ id: e._id, slug: e.slug, title: e.title })));
     const err = new Error('Event not found');
     err.statusCode = 404;
     throw err;
   }
+  
+  console.log('Event found:', event._id, event.title);
 
   // 2. Check event is published
   if (event.status !== EVENT_STATUS.PUBLISHED) {
@@ -99,7 +123,20 @@ async function createRegistration({ body, file, req }) {
       err.statusCode = 400;
       throw err;
     }
-    const memberCount = (teamMembers || []).length;
+    
+    // Parse teamMembers if it's a string
+    let parsedTeamMembers = teamMembers;
+    if (typeof teamMembers === 'string') {
+      try {
+        parsedTeamMembers = JSON.parse(teamMembers);
+      } catch (e) {
+        const err = new Error('Invalid team members format');
+        err.statusCode = 400;
+        throw err;
+      }
+    }
+    
+    const memberCount = (parsedTeamMembers || []).length;
     if (memberCount < event.minTeamSize) {
       const err = new Error(
         `Team must have at least ${event.minTeamSize} member(s). Provided: ${memberCount}`
@@ -116,13 +153,8 @@ async function createRegistration({ body, file, req }) {
     }
   }
 
-  if (event.participationType === PARTICIPATION_TYPE.SOLO) {
-    if ((teamName && teamName.trim()) || (teamMembers && teamMembers.length > 0)) {
-      const err = new Error('Team details are not allowed for solo events');
-      err.statusCode = 400;
-      throw err;
-    }
-  }
+  // For solo events, ignore empty team details (validator adds default empty array)
+  // No validation needed for solo events regarding team details
 
   // 7. Payment verification for paid events ONLY
   if (event.entryFee > 0) {
@@ -243,8 +275,6 @@ async function createRegistration({ body, file, req }) {
     instituteName,
     department,
     yearOrSemester,
-    city,
-    gender,
     eventId: event._id,
     eventTitle: event.title,       // snapshot
     eventDay: event.day,           // snapshot

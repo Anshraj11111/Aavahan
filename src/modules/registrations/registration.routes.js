@@ -46,11 +46,32 @@ const { registrationSchema } = require('./registration.validator');
  *       429:
  *         description: Rate limit exceeded
  */
+// Middleware to parse JSON fields from FormData
+const parseFormDataJSON = (req, res, next) => {
+  console.log('parseFormDataJSON middleware - teamMembers before:', req.body.teamMembers, 'type:', typeof req.body.teamMembers);
+  
+  if (req.body.teamMembers && typeof req.body.teamMembers === 'string') {
+    try {
+      req.body.teamMembers = JSON.parse(req.body.teamMembers);
+      console.log('parseFormDataJSON middleware - teamMembers after parse:', req.body.teamMembers);
+    } catch (error) {
+      console.error('Failed to parse teamMembers:', error);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid teamMembers format',
+        errors: [{ field: 'teamMembers', message: 'Must be valid JSON' }]
+      });
+    }
+  }
+  next();
+};
+
 router.post(
   '/',
   registrationLimiter,
   uploadLimiter,
   upload.single('screenshot'),
+  parseFormDataJSON,
   validate(registrationSchema),
   registrationController.createRegistration
 );

@@ -18,25 +18,25 @@ const authLimiter = rateLimit({
 });
 
 /**
- * Registration submission: 5 per 10 minutes per IP
+ * Registration submission: 100 per hour per IP (very lenient for techfest)
  */
 const registrationLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: 5,
+  windowMs: 60 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many registration attempts. Please try again after 10 minutes.',
+    message: 'Too many registration attempts. Please try again after 1 hour.',
   },
 });
 
 /**
- * File upload: 10 per hour per IP
+ * File upload: 100 per hour per IP (very lenient for techfest)
  */
 const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 10,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

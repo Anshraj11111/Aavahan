@@ -9,6 +9,14 @@ const { successResponse } = require('../../utils/response');
  * Multipart form: fields + optional screenshot file
  */
 const createRegistration = asyncHandler(async (req, res) => {
+  // Log incoming request data for debugging
+  console.log('Registration request received:', {
+    body: req.body,
+    hasFile: !!req.file,
+    teamMembers: req.body.teamMembers,
+    teamMembersType: typeof req.body.teamMembers
+  });
+  
   const registration = await registrationService.createRegistration({
     body: req.body,
     file: req.file,
