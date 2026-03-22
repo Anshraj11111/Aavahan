@@ -27,7 +27,7 @@ const registrationSchema = z
       .optional()
       .default(''),
     eventId: z.string().min(1, 'Event ID is required'),
-    transactionId: z.string().min(1, 'Transaction ID is required').trim(),
+    transactionId: z.string().trim().optional().default(''),
     teamName: z.string().trim().optional().default(''),
     teamMembers: z.array(teamMemberSchema).optional().default([]),
   });

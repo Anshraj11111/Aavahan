@@ -124,7 +124,7 @@ async function createRegistration({ body, file, req }) {
     }
   }
 
-  // 7. Payment verification for paid events
+  // 7. Payment verification for paid events ONLY
   if (event.entryFee > 0) {
     // Transaction ID is mandatory for paid events
     if (!transactionId || !transactionId.trim()) {
@@ -212,9 +212,9 @@ async function createRegistration({ body, file, req }) {
     }
   }
 
-  // 8. Upload payment screenshot to Cloudinary
+  // 8. Upload payment screenshot to Cloudinary (only for paid events)
   let paymentScreenshotUrl = '';
-  if (file) {
+  if (file && event.entryFee > 0) {
     const result = await uploadBuffer(file.buffer, {
       folder: 'techfest2026/payment-screenshots',
       public_id: `screenshot-${Date.now()}`,
@@ -225,7 +225,17 @@ async function createRegistration({ body, file, req }) {
   // 9. Generate unique registration ID (atomic Redis INCR)
   const uniqueRegistrationId = await generateRegistrationId();
 
-  // 10. Create registration with fee from event (not from request body)
+  // 10. Determine payment and registration status based on entry fee
+  let paymentStatus = PAYMENT_STATUS.PENDING_VERIFICATION;
+  let registrationStatus = REGISTRATION_STATUS.PENDING;
+  
+  if (event.entryFee === 0) {
+    // Free events: auto-approve
+    paymentStatus = PAYMENT_STATUS.PAID;
+    registrationStatus = REGISTRATION_STATUS.APPROVED;
+  }
+
+  // 11. Create registration with fee from event (not from request body)
   const registration = await Registration.create({
     fullName,
     email,
@@ -242,24 +252,24 @@ async function createRegistration({ body, file, req }) {
     teamName: teamName || '',
     teamMembers: teamMembers || [],
     amountExpected: event.entryFee, // ALWAYS from event, never from request
-    amountPaid: 0,
+    amountPaid: event.entryFee === 0 ? 0 : 0, // Free events: 0, paid events: 0 until verified
     paymentMethod: 'upi',
     transactionId: transactionId || '',
     paymentScreenshotUrl,
-    paymentStatus: PAYMENT_STATUS.PENDING_VERIFICATION,
-    registrationStatus: REGISTRATION_STATUS.PENDING,
+    paymentStatus,
+    registrationStatus,
     uniqueRegistrationId,
     sourceIp: req.ip || '',
     userAgent: (req.headers && req.headers['user-agent']) || '',
   });
 
-  // 11. Atomically increment event's currentRegistrations
+  // 12. Atomically increment event's currentRegistrations
   await Event.findByIdAndUpdate(eventId, { $inc: { currentRegistrations: 1 } });
 
-  // 12. Invalidate public stats cache
+  // 13. Invalidate public stats cache
   await cacheDel(CACHE_KEYS.PUBLIC_STATS);
 
-  // 13. Send confirmation email (non-fatal)
+  // 14. Send confirmation email (non-fatal)
   sendRegistrationReceived({
     to: email,
     fullName,
