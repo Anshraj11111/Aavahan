@@ -51,6 +51,7 @@ const eventSchema = new mongoose.Schema(
       default: EVENT_STATUS.DRAFT,
     },
     featured: { type: Boolean, default: false },
+    isScheduleOnly: { type: Boolean, default: false },  // Flag for schedule-only items
     tags: [{ type: String, trim: true, lowercase: true }],
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', default: null },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', default: null },

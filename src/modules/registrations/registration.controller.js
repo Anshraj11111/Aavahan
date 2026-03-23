@@ -38,7 +38,7 @@ module.exports = { createRegistration };
  * Verify payment screenshot and transaction ID match using OCR
  */
 const verifyPayment = asyncHandler(async (req, res) => {
-  const { transactionId } = req.body;
+  const { transactionId, eventId, expectedAmount } = req.body;
   const file = req.file;
 
   // Validate inputs
@@ -53,10 +53,16 @@ const verifyPayment = asyncHandler(async (req, res) => {
     err.statusCode = 400;
     throw err;
   }
+  
+  if (!expectedAmount || isNaN(expectedAmount)) {
+    const err = new Error('Expected payment amount is required');
+    err.statusCode = 400;
+    throw err;
+  }
 
   // OCR verification
   try {
-    console.log('Starting OCR verification for transaction ID:', transactionId);
+    console.log('Starting OCR verification for transaction ID:', transactionId, 'Expected amount:', expectedAmount);
     
     // Convert buffer to base64
     const base64Image = file.buffer.toString('base64');
@@ -100,7 +106,7 @@ const verifyPayment = asyncHandler(async (req, res) => {
       return successResponse(
         res,
         { verified: false },
-        'Could not extract text from payment screenshot. Please upload a clear screenshot showing the transaction ID.',
+        'Could not extract text from payment screenshot. Please upload a clear screenshot showing the transaction ID and amount.',
         400
       );
     }
@@ -119,7 +125,28 @@ const verifyPayment = asyncHandler(async (req, res) => {
       );
     }
     
-    console.log('✓ Transaction ID verified successfully in payment screenshot');
+    // Verify payment amount in screenshot
+    const amountStr = expectedAmount.toString();
+    const amountPatterns = [
+      new RegExp(`₹\\s*${amountStr}(?:\\.00)?`, 'i'),
+      new RegExp(`Rs\\.?\\s*${amountStr}(?:\\.00)?`, 'i'),
+      new RegExp(`${amountStr}(?:\\.00)?\\s*(?:₹|Rs)`, 'i'),
+      new RegExp(`\\b${amountStr}(?:\\.00)?\\b`, 'i')
+    ];
+    
+    const amountFound = amountPatterns.some(pattern => pattern.test(extractedText));
+    
+    if (!amountFound) {
+      console.error('Payment amount mismatch. Expected:', expectedAmount, 'Extracted text:', extractedText);
+      return successResponse(
+        res,
+        { verified: false, extractedText },
+        `Payment amount in screenshot does not match event entry fee of ₹${expectedAmount}. Please upload the correct payment screenshot.`,
+        400
+      );
+    }
+    
+    console.log('✓ Transaction ID and payment amount verified successfully in payment screenshot');
     
     return successResponse(
       res,

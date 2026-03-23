@@ -136,17 +136,23 @@ async function createRegistration({ body, file, req }) {
       }
     }
     
-    const memberCount = (parsedTeamMembers || []).length;
-    if (memberCount < event.minTeamSize) {
+    // Team size = team leader (1) + additional members
+    const additionalMemberCount = (parsedTeamMembers || []).length;
+    const totalTeamSize = 1 + additionalMemberCount; // 1 for team leader + additional members
+    
+    // Minimum team size validation (team leader counts as 1)
+    if (totalTeamSize < event.minTeamSize) {
       const err = new Error(
-        `Team must have at least ${event.minTeamSize} member(s). Provided: ${memberCount}`
+        `Team must have at least ${event.minTeamSize} member(s) including team leader. Provided: ${totalTeamSize}`
       );
       err.statusCode = 400;
       throw err;
     }
-    if (event.maxTeamSize && memberCount > event.maxTeamSize) {
+    
+    // Maximum team size validation
+    if (event.maxTeamSize && totalTeamSize > event.maxTeamSize) {
       const err = new Error(
-        `Team cannot have more than ${event.maxTeamSize} member(s). Provided: ${memberCount}`
+        `Team cannot have more than ${event.maxTeamSize} member(s) including team leader. Provided: ${totalTeamSize}`
       );
       err.statusCode = 400;
       throw err;
@@ -228,7 +234,26 @@ async function createRegistration({ body, file, req }) {
         throw err;
       }
       
-      console.log('✓ Transaction ID verified successfully in payment screenshot');
+      // Verify payment amount in screenshot matches event entry fee
+      // Look for the amount in various formats: ₹100, Rs 100, 100.00, etc.
+      const amountStr = event.entryFee.toString();
+      const amountPatterns = [
+        new RegExp(`₹\\s*${amountStr}(?:\\.00)?`, 'i'),
+        new RegExp(`Rs\\.?\\s*${amountStr}(?:\\.00)?`, 'i'),
+        new RegExp(`${amountStr}(?:\\.00)?\\s*(?:₹|Rs)`, 'i'),
+        new RegExp(`\\b${amountStr}(?:\\.00)?\\b`, 'i')
+      ];
+      
+      const amountFound = amountPatterns.some(pattern => pattern.test(extractedText));
+      
+      if (!amountFound) {
+        console.error('Payment amount mismatch. Expected:', event.entryFee, 'Extracted text:', extractedText);
+        const err = new Error(`Payment amount in screenshot does not match event entry fee of ₹${event.entryFee}. Please upload the correct payment screenshot showing ₹${event.entryFee}.`);
+        err.statusCode = 400;
+        throw err;
+      }
+      
+      console.log('✓ Transaction ID and payment amount verified successfully in payment screenshot');
       
     } catch (error) {
       // If it's already our custom error, re-throw it
