@@ -2,7 +2,7 @@
 
 const registrationService = require('./registration.service');
 const asyncHandler = require('../../utils/asyncHandler');
-const { successResponse } = require('../../utils/response');
+const { successResponse, errorResponse } = require('../../utils/response');
 
 /**
  * POST /api/v1/registrations
@@ -91,9 +91,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
     
     if (ocrResponse.data.IsErroredOnProcessing) {
       console.error('OCR processing error:', ocrResponse.data.ErrorMessage);
-      return successResponse(
+      return errorResponse(
         res,
-        { verified: false },
         'Failed to verify payment screenshot. Please ensure the image is clear and readable.',
         400
       );
@@ -103,23 +102,26 @@ const verifyPayment = asyncHandler(async (req, res) => {
     console.log('Extracted text from screenshot:', extractedText);
     
     if (!extractedText || extractedText.trim().length === 0) {
-      return successResponse(
+      return errorResponse(
         res,
-        { verified: false },
         'Could not extract text from payment screenshot. Please upload a clear screenshot showing the transaction ID and amount.',
         400
       );
     }
     
     // Verify transaction ID exists in extracted text (case-insensitive)
+    // Use word boundaries to ensure EXACT match, not substring match
     const normalizedExtractedText = extractedText.toLowerCase().replace(/\s+/g, '');
     const normalizedTransactionId = transactionId.trim().toLowerCase().replace(/\s+/g, '');
     
-    if (!normalizedExtractedText.includes(normalizedTransactionId)) {
+    // Create regex pattern with word boundaries to match exact transaction ID
+    // This prevents partial matches like "T123" matching "T12345678"
+    const transactionIdPattern = new RegExp(`\\b${normalizedTransactionId}\\b`, 'i');
+    
+    if (!transactionIdPattern.test(normalizedExtractedText)) {
       console.error('Transaction ID mismatch. Entered:', transactionId, 'Extracted:', extractedText);
-      return successResponse(
+      return errorResponse(
         res,
-        { verified: false, extractedText },
         'Transaction ID does not match the payment screenshot. Please verify your transaction ID and upload the correct screenshot.',
         400
       );
@@ -186,9 +188,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
       const foundAmounts = extractedText.match(/₹?\s*\d+(?:\.\d{2})?/g);
       console.log('Amounts found in screenshot:', foundAmounts);
       
-      return successResponse(
+      return errorResponse(
         res,
-        { verified: false, extractedText },
         `Payment amount in screenshot does not match event entry fee of ₹${expectedAmount}. Please upload the correct payment screenshot.`,
         400
       );
@@ -205,9 +206,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
     
   } catch (error) {
     console.error('OCR verification error:', error.message);
-    return successResponse(
+    return errorResponse(
       res,
-      { verified: false },
       'Payment verification failed. Please ensure you have uploaded a clear payment screenshot and try again.',
       400
     );

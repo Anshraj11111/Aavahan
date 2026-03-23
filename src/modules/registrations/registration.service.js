@@ -260,10 +260,15 @@ async function createRegistration({ body, file, req }) {
       }
       
       // Verify transaction ID exists in extracted text (case-insensitive)
+      // Use word boundaries to ensure EXACT match, not substring match
       const normalizedExtractedText = extractedText.toLowerCase().replace(/\s+/g, '');
       const normalizedTransactionId = transactionId.trim().toLowerCase().replace(/\s+/g, '');
       
-      if (!normalizedExtractedText.includes(normalizedTransactionId)) {
+      // Create regex pattern with word boundaries to match exact transaction ID
+      // This prevents partial matches like "T123" matching "T12345678"
+      const transactionIdPattern = new RegExp(`\\b${normalizedTransactionId}\\b`, 'i');
+      
+      if (!transactionIdPattern.test(normalizedExtractedText)) {
         console.error('Transaction ID mismatch. Entered:', transactionId, 'Extracted:', extractedText);
         const err = new Error('Transaction ID does not match the payment screenshot. Please verify your transaction ID and upload the correct screenshot.');
         err.statusCode = 400;
