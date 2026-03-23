@@ -108,4 +108,83 @@ router.post(
   registrationController.verifyPayment
 );
 
+/**
+ * @swagger
+ * /registrations/check-team-name:
+ *   post:
+ *     summary: Check if team name is available for an event
+ *     tags: [Registrations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [eventId, teamName]
+ *             properties:
+ *               eventId:
+ *                 type: string
+ *               teamName:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Team name availability status
+ */
+router.post(
+  '/check-team-name',
+  registrationController.checkTeamName
+);
+
+/**
+ * @swagger
+ * /registrations/check-transaction:
+ *   post:
+ *     summary: Check if transaction ID is already used
+ *     tags: [Registrations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [transactionId]
+ *             properties:
+ *               transactionId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Transaction ID availability status
+ */
+router.post(
+  '/check-transaction',
+  registrationController.checkTransactionId
+);
+
+/**
+ * @swagger
+ * /registrations/check-screenshot:
+ *   post:
+ *     summary: Check if payment screenshot is already used
+ *     tags: [Registrations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [screenshot]
+ *             properties:
+ *               screenshot:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Screenshot uniqueness status
+ */
+router.post(
+  '/check-screenshot',
+  upload.single('screenshot'),
+  registrationController.checkScreenshot
+);
+
 module.exports = router;

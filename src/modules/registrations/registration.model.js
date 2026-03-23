@@ -48,6 +48,7 @@ const registrationSchema = new mongoose.Schema(
     paymentMethod: { type: String, default: 'upi' },
     transactionId: { type: String, trim: true, default: '' },
     paymentScreenshotUrl: { type: String, default: '' },
+    paymentScreenshotHash: { type: String, default: '' }, // SHA256 hash for duplicate detection
     paymentStatus: {
       type: String,
       enum: Object.values(PAYMENT_STATUS),
@@ -95,6 +96,8 @@ registrationSchema.index({ checkedIn: 1 });
 registrationSchema.index({ email: 1, eventId: 1 });
 // Compound: duplicate check (phone + event)
 registrationSchema.index({ phone: 1, eventId: 1 });
+// Compound: duplicate check (team name + event)
+registrationSchema.index({ teamName: 1, eventId: 1 });
 // Compound: admin list filtering
 registrationSchema.index({ eventId: 1, registrationStatus: 1 });
 registrationSchema.index({ eventId: 1, paymentStatus: 1 });
@@ -102,6 +105,8 @@ registrationSchema.index({ eventId: 1, paymentStatus: 1 });
 registrationSchema.index({ paymentStatus: 1, createdAt: 1 });
 // Unique transaction ID - sparse index (only non-empty values must be unique)
 registrationSchema.index({ transactionId: 1 }, { unique: true, sparse: true, partialFilterExpression: { transactionId: { $ne: '' } } });
+// Unique payment screenshot hash - sparse index (only non-empty values must be unique)
+registrationSchema.index({ paymentScreenshotHash: 1 }, { unique: true, sparse: true, partialFilterExpression: { paymentScreenshotHash: { $ne: '' } } });
 
 const Registration = mongoose.model('Registration', registrationSchema);
 module.exports = Registration;
