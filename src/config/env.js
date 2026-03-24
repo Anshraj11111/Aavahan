@@ -62,6 +62,10 @@ const env = {
   FEST_TAGLINE: optional('FEST_TAGLINE', 'Innovate. Compete. Celebrate.'),
   FEST_START_DATE: optional('FEST_START_DATE', '2026-04-01'),
   FEST_END_DATE: optional('FEST_END_DATE', '2026-04-03'),
+
+  // Razorpay
+  RAZORPAY_KEY_ID: optional('RAZORPAY_KEY_ID', ''),
+  RAZORPAY_KEY_SECRET: optional('RAZORPAY_KEY_SECRET', ''),
 };
 
 module.exports = env;
