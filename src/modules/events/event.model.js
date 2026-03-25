@@ -6,21 +6,21 @@ const { EVENT_STATUS, PARTICIPATION_TYPE } = require('../../constants/statuses')
 
 const eventSchema = new mongoose.Schema(
   {
-    title: { type: String, required: [true, 'Title is required'], trim: true, maxlength: 200 },
-    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    title: { type: String, trim: true, maxlength: 200, default: '' },
+    slug: { type: String, unique: true, lowercase: true, trim: true, sparse: true },
     category: {
       type: String,
-      required: [true, 'Category is required'],
       enum: Object.values(EVENT_CATEGORIES),
       lowercase: true,
+      default: 'technical',
     },
     department: { type: String, trim: true, default: '' },
     day: {
       type: String,
-      required: [true, 'Day is required'],
       enum: Object.values(EVENT_DAYS),
+      default: 'Day 1',
     },
-    date: { type: Date, required: [true, 'Date is required'] },
+    date: { type: Date, default: null },
     startTime: { type: String, trim: true, default: '' },
     endTime: { type: String, trim: true, default: '' },
     venue: { type: String, trim: true, default: '' },
@@ -30,13 +30,19 @@ const eventSchema = new mongoose.Schema(
     eligibility: { type: String, trim: true, default: '' },
     participationType: {
       type: String,
-      required: [true, 'Participation type is required'],
       enum: Object.values(PARTICIPATION_TYPE),
+      default: 'solo',
     },
     minTeamSize: { type: Number, default: 1, min: 1 },
     maxTeamSize: { type: Number, default: 1, min: 1 },
     entryFee: { type: Number, default: 0, min: 0 },
     prizeDetails: { type: String, trim: true, default: '' },
+    coordinators: [{
+      name: { type: String, trim: true, default: '' },
+      phone: { type: String, trim: true, default: '' },
+      email: { type: String, trim: true, lowercase: true, default: '' }
+    }],
+    // Keep old fields for backward compatibility
     coordinatorName: { type: String, trim: true, default: '' },
     coordinatorPhone: { type: String, trim: true, default: '' },
     coordinatorEmail: { type: String, trim: true, lowercase: true, default: '' },

@@ -9,6 +9,7 @@ const EVENT_DAYS = Object.freeze({
 const EVENT_CATEGORIES = Object.freeze({
   CULTURAL: 'cultural',
   TECHNICAL: 'technical',
+  GAMES: 'games',
   ROBOTICS: 'robotics',
   CODING: 'coding',
   DESIGN: 'design',
