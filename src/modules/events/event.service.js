@@ -128,7 +128,7 @@ async function updateEvent(id, data, admin, req) {
 }
 
 /**
- * Delete an event (only if zero registrations).
+ * Delete an event (force delete even with registrations).
  */
 async function deleteEvent(id, admin, req) {
   const event = await Event.findById(id);
@@ -138,13 +138,11 @@ async function deleteEvent(id, admin, req) {
     throw err;
   }
 
+  // Delete all registrations for this event first
   const regCount = await Registration.countDocuments({ eventId: id });
   if (regCount > 0) {
-    const err = new Error(
-      `Cannot delete event with ${regCount} existing registration(s). Close the event instead.`
-    );
-    err.statusCode = 400;
-    throw err;
+    await Registration.deleteMany({ eventId: id });
+    console.log(`Deleted ${regCount} registrations for event ${id}`);
   }
 
   const before = event.toObject();
