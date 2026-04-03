@@ -20,7 +20,7 @@ const eventSchema = new mongoose.Schema(
       enum: Object.values(EVENT_DAYS),
       default: 'Day 1',
     },
-    date: { type: Date, default: null },
+    date: { type: String, trim: true, default: '' },
     startTime: { type: String, trim: true, default: '' },
     endTime: { type: String, trim: true, default: '' },
     venue: { type: String, trim: true, default: '' },

@@ -17,7 +17,6 @@ async function createEvent(data, admin, req) {
   const event = await Event.create({
     ...data,
     slug,
-    date: new Date(data.date),
     registrationDeadline: data.registrationDeadline ? new Date(data.registrationDeadline) : null,
     createdBy: admin._id,
     updatedBy: admin._id,
@@ -99,7 +98,6 @@ async function updateEvent(id, data, admin, req) {
   Object.assign(event, {
     ...data,
     updatedBy: admin._id,
-    date: data.date ? new Date(data.date) : event.date,
     registrationDeadline: data.registrationDeadline
       ? new Date(data.registrationDeadline)
       : event.registrationDeadline,

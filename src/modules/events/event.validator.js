@@ -20,18 +20,18 @@ const createEventSchema = z.object({
   participationType: z.enum(Object.values(PARTICIPATION_TYPE), {
     errorMap: () => ({ message: 'participationType must be solo or team' }),
   }).optional().default('solo'),
-  minTeamSize: z.number().int().min(1).optional().default(1),
-  maxTeamSize: z.number().int().min(1).optional().default(1),
-  entryFee: z.number().min(0).optional().default(0),
+  minTeamSize: z.union([z.number().int().min(1), z.string()]).optional().default(1),
+  maxTeamSize: z.union([z.number().int().min(1), z.string()]).optional().default(1),
+  entryFee: z.union([z.number().min(0), z.string()]).optional().default(0),
   prizeDetails: z.string().trim().optional().default(''),
   coordinators: z.array(z.object({
     name: z.string().trim().optional().default(''),
     phone: z.string().trim().optional().default(''),
-    email: z.string().email().optional().or(z.literal('')).default('')
+    email: z.union([z.string().email(), z.literal('')]).optional().default('')
   })).optional().default([]),
   coordinatorName: z.string().trim().optional().default(''),
   coordinatorPhone: z.string().trim().optional().default(''),
-  coordinatorEmail: z.string().email().optional().or(z.literal('')).default(''),
+  coordinatorEmail: z.union([z.string().email(), z.literal('')]).optional().default(''),
   registrationDeadline: z
     .string()
     .optional()
@@ -46,6 +46,8 @@ const createEventSchema = z.object({
   status: z.enum(Object.values(EVENT_STATUS)).optional().default(EVENT_STATUS.DRAFT),
   featured: z.boolean().optional().default(false),
   tags: z.array(z.string().trim().toLowerCase()).optional().default([]),
+  posterImage: z.string().trim().optional().default(''),
+  bannerImage: z.string().trim().optional().default(''),
 });
 
 const updateEventSchema = createEventSchema.partial();
