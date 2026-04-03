@@ -3,7 +3,7 @@
 const EVENT_DAYS = Object.freeze({
   DAY1: 'Day 1',
   DAY2: 'Day 2',
-  DAY3: 'Day 3',
+  BOTH: 'Day 1 / Day 2',
 });
 
 const EVENT_CATEGORIES = Object.freeze({
