@@ -2,33 +2,31 @@
 
 const { getRedisClient } = require('../config/redis');
 
-const COUNTER_KEY = 'reg:counter';
-const PREFIX = 'SRGTF2026';
-const PAD_LENGTH = 6;
+const COUNTER_KEY_PREFIX = 'reg:counter:event:';
 
 /**
- * Atomically generate the next unique registration ID.
+ * Atomically generate the next sequential registration number for a specific event.
  * Uses Redis INCR to safely handle concurrent requests.
  * Falls back to timestamp-based ID if Redis is unavailable.
  *
- * Format: SRGTF2026-000001 (with Redis) or SRGTF2026-TIMESTAMP (without Redis)
+ * Format: Sequential number per event (1, 2, 3, ...)
  *
- * @returns {Promise<string>} Unique registration ID
+ * @param {string} eventId - The event ID to generate registration number for
+ * @returns {Promise<number>} Sequential registration number for the event
  */
-async function generateRegistrationId() {
+async function generateRegistrationId(eventId) {
   const redis = getRedisClient();
   
-  // If Redis is not available, use timestamp-based ID
+  // If Redis is not available, use timestamp-based number
   if (!redis) {
     const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `${PREFIX}-${timestamp}${random}`;
+    return timestamp;
   }
   
-  // Use Redis counter for atomic increments
-  const counter = await redis.incr(COUNTER_KEY);
-  const padded = String(counter).padStart(PAD_LENGTH, '0');
-  return `${PREFIX}-${padded}`;
+  // Use Redis counter for atomic increments per event
+  const counterKey = `${COUNTER_KEY_PREFIX}${eventId}`;
+  const counter = await redis.incr(counterKey);
+  return counter;
 }
 
 module.exports = generateRegistrationId;

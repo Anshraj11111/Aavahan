@@ -198,7 +198,9 @@ async function createRegistration({ body, file, req }) {
   // For solo events, ignore empty team details (validator adds default empty array)
   // No validation needed for solo events regarding team details
 
-  // 7. Payment verification for paid events ONLY
+  // 7. Payment verification for paid events ONLY - DISABLED FOR DIRECT REGISTRATION
+  // Payment will be handled manually by coordinators after registration
+  /*
   if (event.entryFee > 0) {
     // Transaction ID is mandatory for paid events
     if (!transactionId || !transactionId.trim()) {
@@ -370,11 +372,13 @@ async function createRegistration({ body, file, req }) {
       throw err;
     }
   }
+  */
 
-  // 8. Upload payment screenshot to Cloudinary (only for paid events)
+  // 8. Upload payment screenshot to Cloudinary (only for paid events) - DISABLED FOR DIRECT REGISTRATION
   let paymentScreenshotUrl = '';
   let paymentScreenshotHash = '';
   
+  /*
   if (file && event.entryFee > 0) {
     // Generate hash for duplicate detection
     const crypto = require('crypto');
@@ -387,19 +391,15 @@ async function createRegistration({ body, file, req }) {
     });
     paymentScreenshotUrl = result.secure_url;
   }
+  */
 
-  // 9. Generate unique registration ID (atomic Redis INCR)
-  const uniqueRegistrationId = await generateRegistrationId();
+  // 9. Generate unique registration ID per event (atomic Redis INCR)
+  const uniqueRegistrationId = await generateRegistrationId(event._id.toString());
 
-  // 10. Determine payment and registration status based on entry fee
-  let paymentStatus = PAYMENT_STATUS.PENDING_VERIFICATION;
-  let registrationStatus = REGISTRATION_STATUS.PENDING;
-  
-  if (event.entryFee === 0) {
-    // Free events: auto-approve
-    paymentStatus = PAYMENT_STATUS.PAID;
-    registrationStatus = REGISTRATION_STATUS.APPROVED;
-  }
+  // 10. Determine payment and registration status - DIRECT REGISTRATION (no payment verification)
+  // Registrations are pending until admin approves and confirms payment
+  let paymentStatus = PAYMENT_STATUS.PENDING_VERIFICATION; // Payment pending until coordinator confirms
+  let registrationStatus = REGISTRATION_STATUS.PENDING; // Pending until admin approves
 
   // 11. Create registration with fee from event (not from request body)
   const registration = await Registration.create({
